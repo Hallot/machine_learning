@@ -5,7 +5,7 @@
 .ml.cmo:
 	ocamlc -c $<
 
-EXEC= main.cmo && ml
+EXEC= clean main.cmo ml
 	
 all: $(EXEC)
 
