@@ -10,8 +10,9 @@ let import file_name separator size_x size_y =
           while true; do
             (* Create a list of values from a line *)
             let line_list = Str.split reg_separator (input_line ic) in
-              List.iteri
-                (fun j elem -> value_array.(!i).(j) <- float_of_string elem)
+            let j = ref 0 in
+              List.iter
+                (fun elem -> value_array.(!i).(!j) <- float_of_string elem; j:= !j + 1)
                 line_list;
               i := !i + 1
           done;
