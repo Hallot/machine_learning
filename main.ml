@@ -60,15 +60,21 @@ generate_bar_data white "data_white.dat";;
 
 (* Question 4.a *)
 (* Randomly split the data: 70% training 30% test *)
+(* Return a tuple of lists (test, training) containing a list with the value for each one *)
 let split matrix perc_test =
   let mat_size = (Array.length matrix) - 1 in
   let training_list = [] in
   let test_list = [] in
   let _ = Utils.fisher_yates matrix in
   let rec aux matrix perc_test n (acc1, acc2) =
-    if n == 0 then (acc1, acc2)
-    else let cur = ((float_of_int n) /. float_of_int mat_size) in
-      let el = Utils.array_to_list matrix.(n) in
-        if cur > 1. -. perc_test then aux matrix perc_test (n - 1) (el::acc1, acc2)
-        else aux matrix perc_test (n - 1) (acc1, el::acc2)
+    let el = Utils.array_to_list matrix.(n) in
+      if n == 0 then (acc1, el::acc2)
+      else let cur = ((float_of_int n) /. float_of_int mat_size) in
+          if cur > 1. -. perc_test then aux matrix perc_test (n - 1) (el::acc1, acc2)
+          else aux matrix perc_test (n - 1) (acc1, el::acc2)
   in aux matrix perc_test mat_size (test_list, training_list);;
+
+let (test, training) = split red 0.3;;
+
+
+(* Question 4.b *)
