@@ -6,12 +6,12 @@
 	ocamlc -c $<
 
 EXEC= clean main.cmo ml
-	
+
 all: $(EXEC)
 
-main.cmo: csv.cmi utils.cmi main.ml
+main.cmo: matrix.cmi utils.cmi main.ml
 
-ML_BINS = csv.cmo utils.cmo main.cmo
+ML_BINS = matrix.cmo utils.cmo main.cmo
 ml: $(ML_BINS)
 	ocamlc -o $@ str.cma $(ML_BINS)
 

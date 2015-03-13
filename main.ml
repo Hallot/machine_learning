@@ -2,27 +2,15 @@
 (*
 #cd "/home/pierre/Glasgow/ML/machine_learning/";;
 #load "str.cma";;
-#load "csv.cmo";;
+#load "matrix.cmo";;
 #load "utils.cmo";;
-
-let import_white_wine path = Csv.import path ";" 4898 12;;
-let import_red_wine path = Csv.import path ";" 1599 12;;
-
-let test_import_white path = 
-Utils.print_float_matrix (import_white_wine path);;
-
-let test_import_red path = 
-Utils.print_float_matrix (import_red_wine path);;
-
-test_import_white "/home/pierre/Glasgow/ML/winequality-white.csv";;
-test_import_red "/home/pierre/Glasgow/ML/winequality-red.csv";;
 *)
 
 
 (* Question 1 *)
 (* Import both csv files into a float array array *)
-let red = Csv.import "/home/pierre/Glasgow/ML/winequality-red.csv" ";" 1599 12;;
-let white = Csv.import "/home/pierre/Glasgow/ML/winequality-white.csv" ";" 4898 12;;
+let red = Utils.import "/home/pierre/Glasgow/ML/winequality-red.csv" ";" 1599 12;;
+let white = Utils.import "/home/pierre/Glasgow/ML/winequality-white.csv" ";" 4898 12;;
 
 
 (* Question 2 *)
@@ -60,21 +48,34 @@ generate_bar_data white "data_white.dat";;
 
 (* Question 4.a *)
 (* Randomly split the data: 70% training 30% test *)
-(* Return a tuple of lists (test, training) containing a list with the value for each one *)
+(* Return a tuple of arrays (test, training) containing an array with the value for each one *)
 let split matrix perc_test =
-  let mat_size = (Array.length matrix) - 1 in
-  let training_list = [] in
-  let test_list = [] in
+  let mat_size = (Array.length matrix) in
+  let num_testing = int_of_float ((float_of_int mat_size) *. perc_test) in
+  let num_training = mat_size - num_testing in
+  let testing_matrix = Array.make num_testing [|0.|] in
+  let training_matrix = Array.make num_training [|0.|] in
+  (* Shuffle the matrix *)
   let _ = Utils.fisher_yates matrix in
-  let rec aux matrix perc_test n (acc1, acc2) =
-    let el = Utils.array_to_list matrix.(n) in
-      if n == 0 then (acc1, el::acc2)
-      else let cur = ((float_of_int n) /. float_of_int mat_size) in
-          if cur > 1. -. perc_test then aux matrix perc_test (n - 1) (el::acc1, acc2)
-          else aux matrix perc_test (n - 1) (acc1, el::acc2)
-  in aux matrix perc_test mat_size (test_list, training_list);;
+  (* Separate the values *)
+  let rec aux matrix n (acc1, acc2) =
+    let el = matrix.(n) in
+    let _ =
+      (* Take the num_test firsts elements and put them the testing matrix *)
+      if n < num_testing then 
+        let _ = acc1.(n) <- el in
+          ()
+      else 
+        (* Put the remainder in the training matrix *)
+        let _ = acc2.(n - num_testing) <- el in
+          () in
+      if n == mat_size - 1 then (acc1, acc2)
+      else aux matrix (n + 1) (acc1, acc2)
+  in aux matrix 0 (testing_matrix, training_matrix);;
 
 let (test, training) = split red 0.3;;
 
 
 (* Question 4.b *)
+(* Fit a linear regressin to the model *)
+(* Return the parameters of the linear model *)
