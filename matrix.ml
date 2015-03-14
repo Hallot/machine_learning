@@ -139,16 +139,7 @@ let reduce_rotate (mat1, mat2) =
 let inverse mat =
   let temp = mat in
   let m = nb_line mat in
-  let n = nb_col temp in
-  let inv = make_inv_mat m n in
-  let reduce_rotate (mat1, mat2) =
-    (
-      for i = 0 to m - 2 do
-        pivot_iter mat1 mat2 i
-      done;
-      (rotate mat1, rotate mat2) 
-    )
-  in
+  let inv = make_inv_mat m m in
   let (res1, res2) = n_compose reduce_rotate (temp, inv) 2 in
     reduce_diag res1 res2;
     res2;;
