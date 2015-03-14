@@ -6,6 +6,7 @@
 	ocamlc -c $<
 
 EXEC= clean main.cmo ml
+DEBUG= clean main.cmo bug
 
 all: $(EXEC)
 
@@ -17,3 +18,9 @@ ml: $(ML_BINS)
 
 clean:
 	rm -rf *.cm*; rm -f ml	
+
+bug: $(ML_BINS)
+	ocamlc -g str.cma $(ML_BINS)
+	
+debug: $(DEBUG)
+	

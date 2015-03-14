@@ -10,6 +10,7 @@
 (* Question 1 *)
 (* Import both csv files into a float array array *)
 let red = Utils.import "/home/pierre/Glasgow/ML/winequality-red.csv" ";" 1599 12;;
+Utils.print_float_matrix red;;
 let white = Utils.import "/home/pierre/Glasgow/ML/winequality-white.csv" ";" 4898 12;;
 
 
@@ -79,3 +80,38 @@ let (test, training) = split red 0.3;;
 (* Question 4.b *)
 (* Fit a linear regressin to the model *)
 (* Return the parameters of the linear model *)
+let make_mat_x_t mat = 
+  let m = Matrix.nb_line mat in
+  let n = Matrix.nb_col mat in
+  let x = Array.make_matrix m n 1. in
+  let t = Array.make_matrix m 1 0. in
+    for i = 0 to m - 1 do
+      for j = 0 to n - 1 do
+        if j < n - 1 then x.(i).(j + 1) <- mat.(i).(j)
+        else t.(i).(0) <- mat.(i).(j)
+      done
+    done;
+    x, t;;
+
+let linear_regression mat =
+  let x, t = make_mat_x_t mat in
+  let x_trans = Matrix.transpose x in
+  let inv_xtrans_x = Matrix.inverse (Matrix.mult x_trans x) in
+  let w = Matrix.mult (Matrix.mult inv_xtrans_x x_trans) t in
+    w;;
+
+(*
+let x, t = make_mat_x_t red;;
+let x_trans = Matrix.transpose x;;
+Matrix.mult x_trans x;;
+
+let inv_xtrans_x x = Matrix.inverse (Matrix.mult (Matrix.transpose x) x);;
+Matrix.mult (Matrix.transpose a) a;;
+let a = [|[|0.; 0.; 0.|] ; [|4.; 5.; 6.|]|];;
+inv_xtrans_x a;;
+
+0. != 0.;;
+
+linear_regression a;;
+*)
+linear_regression red;;
