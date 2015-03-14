@@ -10,9 +10,9 @@ DEBUG= clean main.cmo bug
 
 all: $(EXEC)
 
-main.cmo: matrix.cmi utils.cmi main.ml
+main.cmo: utils.cmi matrix.cmi main.ml
 
-ML_BINS = matrix.cmo utils.cmo main.cmo
+ML_BINS = utils.cmo matrix.cmo main.cmo
 ml: $(ML_BINS)
 	ocamlc -o $@ str.cma $(ML_BINS)
 

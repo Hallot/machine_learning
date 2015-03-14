@@ -10,7 +10,6 @@
 (* Question 1 *)
 (* Import both csv files into a float array array *)
 let red = Utils.import "/home/pierre/Glasgow/ML/winequality-red.csv" ";" 1599 12;;
-Utils.print_float_matrix red;;
 let white = Utils.import "/home/pierre/Glasgow/ML/winequality-white.csv" ";" 4898 12;;
 
 
@@ -100,18 +99,5 @@ let linear_regression mat =
   let w = Matrix.mult (Matrix.mult inv_xtrans_x x_trans) t in
     w;;
 
-(*
-let x, t = make_mat_x_t red;;
-let x_trans = Matrix.transpose x;;
-Matrix.mult x_trans x;;
 
-let inv_xtrans_x x = Matrix.inverse (Matrix.mult (Matrix.transpose x) x);;
-Matrix.mult (Matrix.transpose a) a;;
-let a = [|[|0.; 0.; 0.|] ; [|4.; 5.; 6.|]|];;
-inv_xtrans_x a;;
-
-0. != 0.;;
-
-linear_regression a;;
-*)
 linear_regression red;;

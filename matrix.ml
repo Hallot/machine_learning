@@ -129,11 +129,13 @@ let rotate mat =
 
 
 let reduce_rotate (mat1, mat2) =
+  reduce_diag mat1 mat2;
   let m = nb_line mat1 in
     for i = 0 to m - 2 do
       pivot_iter mat1 mat2 i
     done;
     (rotate mat1, rotate mat2);;
+
 
 
 let inverse mat =
