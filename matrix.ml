@@ -16,6 +16,18 @@ let mult mat1 mat2 =
     res;;
 
 
+let copy mat = 
+  let m = nb_line mat in
+  let n = nb_col mat in
+  let res = Array.make_matrix m n 0. in
+    for i = 0 to m - 1 do
+      for j = 0 to n - 1 do
+        res.(i).(j) <- mat.(i).(j)
+      done
+    done;
+    res;;
+
+
 let transpose mat = 
   let m = nb_line mat in
   let n = nb_col mat in
@@ -31,12 +43,13 @@ let transpose mat =
 let mult_const mat const =
   let m = nb_line mat in
   let n = nb_col mat in
+  let res = Array.make_matrix m n 0. in
     for i = 0 to m - 1 do
       for j = 0 to n - 1 do
-        mat.(i).(j) <- const *. mat.(i).(j)
+        res.(i).(j) <- const *. mat.(i).(j)
       done
     done;
-    mat;;
+    res;;
 
 
 let combine_lines mat (l_combined, coeff1) (l_to_add, coeff2) =
@@ -77,6 +90,19 @@ let swap_lines mat i j =
     done;;
 
 
+let reduce_line mat inv i =
+  let n = nb_col mat in
+  let piv = mat.(i).(i) in
+    if piv <> 1. then 
+      if piv <> 0. then
+        begin
+          for j = 0 to n - 1 do
+            mat.(i).(j) <- mat.(i).(j) /. piv;
+            inv.(i).(j) <- inv.(i).(j) /. piv;
+          done;
+        end;;
+
+
 let pivot_iter mat inv j =
   let piv_index = find_piv mat j in
     if piv_index <> j then
@@ -84,22 +110,14 @@ let pivot_iter mat inv j =
         swap_lines mat j piv_index;
         swap_lines inv j piv_index;
       end;
+    reduce_line mat inv j;
     pivot mat inv (j, j);;
 
 
 let reduce_diag mat inv = 
   let m = nb_line mat in
-  let n = nb_col mat in
     for i = 0 to m - 1 do
-      let piv = mat.(i).(i) in
-        if piv <> 1. then 
-          if piv <> 0. then
-            begin
-              for j = 0 to n - 1 do
-                mat.(i).(j) <- mat.(i).(j) /. piv;
-                inv.(i).(j) <- inv.(i).(j) /. piv;
-              done;
-            end;
+      reduce_line mat inv i
     done;;
 
 
@@ -129,7 +147,6 @@ let rotate mat =
 
 
 let reduce_rotate (mat1, mat2) =
-  reduce_diag mat1 mat2;
   let m = nb_line mat1 in
     for i = 0 to m - 2 do
       pivot_iter mat1 mat2 i
@@ -137,9 +154,8 @@ let reduce_rotate (mat1, mat2) =
     (rotate mat1, rotate mat2);;
 
 
-
 let inverse mat =
-  let temp = mat in
+  let temp = copy mat in
   let m = nb_line mat in
   let inv = make_inv_mat m m in
   let (res1, res2) = n_compose reduce_rotate (temp, inv) 2 in

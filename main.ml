@@ -90,7 +90,7 @@ let make_mat_x_t mat =
         else t.(i).(0) <- mat.(i).(j)
       done
     done;
-    x, t;;
+    x, t;;  
 
 let linear_regression mat =
   let x, t = make_mat_x_t mat in
@@ -99,5 +99,9 @@ let linear_regression mat =
   let w = Matrix.mult (Matrix.mult inv_xtrans_x x_trans) t in
     w;;
 
+let w_red = linear_regression training;; 
 
-linear_regression red;;
+
+(* Question 4.b *)
+(* Fit a linear regressin to the model *)
+(* Return the parameters of the linear model *)
