@@ -77,7 +77,7 @@ let (test, training) = split red 0.3;;
 
 
 (* Question 4.b *)
-(* Fit a linear regressin to the model *)
+(* Fit a linear regression to the model *)
 (* Return the parameters of the linear model *)
 let make_mat_x_t mat = 
   let m = Matrix.nb_line mat in
@@ -102,6 +102,56 @@ let linear_regression mat =
 let w_red = linear_regression training;; 
 
 
-(* Question 4.b *)
-(* Fit a linear regressin to the model *)
-(* Return the parameters of the linear model *)
+(* Question 4.c *)
+(* Make a scatter plot of the prediction *)
+(* Calculate the prediction for the test set *)
+let compute_prediction train_mat test_mat =
+  let x, t = make_mat_x_t test_mat in
+  let w = linear_regression train_mat in
+  let m = Matrix.nb_line x in
+  let n = Matrix.nb_col x in
+  let res = Array.make_matrix m 1 0. in
+    for i = 0 to m - 1 do
+      for j = 0 to n - 1 do
+        res.(i).(0) <- res.(i).(0) +. w.(j).(0) *. x.(i).(j)
+      done
+    done;
+    res;;
+
+
+let write_scatterplot prediction actual file =
+  let m = Matrix.nb_line prediction in
+    try 
+      let oc = open_out file in
+        for i = 0 to m - 1 do
+          Printf.fprintf oc "%f %f\n" actual.(i).(0) prediction.(i).(0);
+        done;
+        close_out oc;
+    with
+      | e -> raise e;;
+
+
+let test_qualities_gen test_mat = 
+  let m = Matrix.nb_line test in
+  let res = Array.make_matrix m 1 0. in
+    for i = 0 to m - 1 do
+      res.(i).(0) <- test.(i).(11);
+    done;
+    res;;
+
+let test_qualities = test_qualities_gen test;;
+let test_predictions = compute_prediction training test;;
+
+write_scatterplot test_predictions test_qualities "scatterplot_red.dat";;
+
+(* Compute the mean squared error *)
+let mean_square_error mat1 mat2 =
+  let res = ref 0. in
+  let m = Matrix.nb_line mat1 in
+    for i = 0 to m - 1 do
+      res := !res +. (mat1.(i).(0) -. mat2.(i).(0)) *. (mat1.(i).(0) -. mat2.(i).(0))
+    done;
+    !res /. float_of_int m;;
+
+
+

@@ -1,5 +1,6 @@
 (* Implements various functions on matrices for floats *)
 (* Most implementations are naives and assume that arguments are valid *)
+(* The inverse method implementation was created using an old exercise sheet from Dr. Fortin as a guide *)
 
 (* Return the number of columns of a matrix *)
 val nb_col : float array array -> int
