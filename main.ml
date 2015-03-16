@@ -1,9 +1,9 @@
 
-(*
 #cd "/home/pierre/Glasgow/ML/machine_learning/";;
 #load "str.cma";;
 #load "matrix.cmo";;
 #load "utils.cmo";;
+(*
 *)
 
 
@@ -118,7 +118,7 @@ let compute_prediction train_mat test_mat =
     done;
     res;;
 
-
+(* plot "scatterplot_red.dat"  with points pt 7 notitle *)
 let write_scatterplot prediction actual file =
   let m = Matrix.nb_line prediction in
     try 
@@ -173,12 +173,28 @@ let least_square_regression mat =
   let m = Matrix.nb_line mat in
   let t_minus_xw = Matrix.sub t (Matrix.mult x w) in
   let sigma = Matrix.mult (Matrix.transpose t_minus_xw) t_minus_xw in
-    sigma.(0).(0) /. float_of_int m;;
+    (w, sigma.(0).(0) /. float_of_int m);;
+
+(* Plot the results *)
+(* Run the rergssion 100 times on new data each time *)
+(* plot "perf_vs_reg.dat"  with points pt 7 notitle *)
+let plot_results mat file =
+  try 
+    let oc = open_out file in
+      for i = 0 to 99 do
+        let (test, training) = split mat 0.3 in
+        let w, sigma = least_square_regression training in
+        let test_qualities = test_qualities_gen test in
+        let test_predictions = compute_prediction training test in
+        let acc = accuracy test_qualities test_predictions in
+          Printf.fprintf oc "%f %f\n" sigma acc;
+      done;
+      close_out oc;
+  with
+    | e -> raise e;;
 
 
-
-
-
+plot_results red "perf_vs_reg.dat";;
 
 
 
