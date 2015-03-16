@@ -1,9 +1,9 @@
 
-(*
 #cd "/home/pierre/Glasgow/ML/machine_learning/";;
 #load "str.cma";;
 #load "matrix.cmo";;
 #load "utils.cmo";;
+(*
 *)
 
 
@@ -176,7 +176,7 @@ let least_square_regression mat =
     (w, sigma.(0).(0) /. float_of_int m);;
 
 
-(* Add the epsilon term to the value when computing it *)
+(* Add the epsilon term based on a normal distribution to the value when computing it *)
 let compute_prediction_least_square train_mat test_mat sigma mu =
   let x, t = make_mat_x_t test_mat in
   let w = linear_regression train_mat in
@@ -215,18 +215,40 @@ let plot_results mat file =
 
 (* plot_results red "perf_vs_reg.dat";; *)
 
+(* Question 5.c *)
+(* Implement k-fold cross-validation *)
+let copy_except mat k k_fold =
+  let m = Matrix.nb_line mat in
+  let n = Matrix.nb_col mat in
+  let res = Array.make_matrix (m - (m / k)) n 0. in
+  let skip = ref 0 in
+    for i = 0 to m - 1 do
+      if i < (m / k) * k_fold || i >= (m / k) * (k_fold + 1) then 
+        begin
+          for j = 0 to n - 1 do
+            if !skip = 1 then res.(i - (m / k)).(j) <- mat.(i - (m / k)).(j)
+            else res.(i).(j) <- mat.(i).(j)
+          done;
+        end
+      else skip := 1 
+    done;
+    res;;
 
 
-
-
-
-
-
-
-
-
-
-
+let k_cross_validation k mat =
+  let m = Matrix.nb_line mat in
+  let n = Matrix.nb_col mat in
+  let w_mean = Array.make_matrix n 1 0. in
+  let sigma_mean = ref 0. in
+    Utils.fisher_yates mat;
+    for i = 0 to k - 1 do
+      let w, sigma = least_square_regression (copy_except mat k i) in
+        for j = 0 to n - 1 do
+          w_mean.(j).(0) <- w_mean.(j).(0) +. w.(j).(0)
+        done;
+        sigma_mean := !sigma_mean +. sigma
+    done;
+    (Matrix.mult_const w_mean (1. /. (float_of_int m)), !sigma_mean /. (float_of_int m));;
 
 
 
