@@ -1,9 +1,9 @@
 
+(*
 #cd "/home/pierre/Glasgow/ML/machine_learning/";;
 #load "str.cma";;
 #load "matrix.cmo";;
 #load "utils.cmo";;
-(*
 *)
 
 
@@ -221,7 +221,9 @@ let copy_except mat k k_fold =
   let m = Matrix.nb_line mat in
   let n = Matrix.nb_col mat in
   let res = Array.make_matrix (m - (m / k)) n 0. in
+  let res2 = Array.make_matrix (m / k) n 0. in
   let skip = ref 0 in
+  let c = ref 0 in
     for i = 0 to m - 1 do
       if i < (m / k) * k_fold || i >= (m / k) * (k_fold + 1) then 
         begin
@@ -230,25 +232,71 @@ let copy_except mat k k_fold =
             else res.(i).(j) <- mat.(i).(j)
           done;
         end
-      else skip := 1 
+      else 
+        begin
+          skip := 1;
+          let _ = c := !c + 1 in
+            for j = 0 to n - 1 do
+              res2.(!c - 1).(j) <- mat.(!c - 1).(j);
+            done;
+        end
     done;
-    res;;
+    res, res2;;
 
 
 let k_cross_validation k mat =
-  let m = Matrix.nb_line mat in
   let n = Matrix.nb_col mat in
-  let w_mean = Array.make_matrix n 1 0. in
-  let sigma_mean = ref 0. in
+  let w_max = Array.make_matrix n 1 0. in
+  let sigma_max = ref 0. in
+  let max_acc = ref 0. in
     Utils.fisher_yates mat;
     for i = 0 to k - 1 do
-      let w, sigma = least_square_regression (copy_except mat k i) in
-        for j = 0 to n - 1 do
-          w_mean.(j).(0) <- w_mean.(j).(0) +. w.(j).(0)
-        done;
-        sigma_mean := !sigma_mean +. sigma
+      let train, test = copy_except mat k i in
+      let w, sigma = least_square_regression (train) in
+      let test_qual = test_qualities_gen test in
+      let test_pred = compute_prediction_least_square train test sigma 0. in
+      let acc = accuracy test_pred test_qual in
+        if acc > !max_acc then
+          begin
+            for j = 0 to n - 1 do
+              w_max.(j).(0) <- w.(j).(0)
+            done;
+            sigma_max := sigma;
+            max_acc := acc;
+          end;
     done;
-    (Matrix.mult_const w_mean (1. /. (float_of_int m)), !sigma_mean /. (float_of_int m));;
+    (w_max, !sigma_max, !max_acc);;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
