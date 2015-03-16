@@ -1,9 +1,9 @@
 
+(*
 #cd "/home/pierre/Glasgow/ML/machine_learning/";;
 #load "str.cma";;
 #load "matrix.cmo";;
 #load "utils.cmo";;
-(*
 *)
 
 
@@ -331,12 +331,6 @@ let find_k_nearest_neighbour k point matrix =
   let n = Matrix.nb_col matrix in
   let k_closer = Array.make_matrix k n 10000. in
   let k_id = Array.make_matrix k n 0 in
-    (* Initialise the array because 0. is bad *)
-    for i = 0 to k - 1 do
-      if  point == matrix.(i) || (not_in_mat matrix.(i) k_closer) = false then (k_closer.(i) <- matrix.(k + i); k_id.(i).(0) <- k + i)
-      else (k_closer.(i) <- matrix.(i); k_id.(i).(0) <- i)
-    done;
-    sort_dist point k_closer k_id;
     for i = 0 to m - 1 do
       if (manhattan point matrix.(i)) < (manhattan point k_closer.(k - 1)) && point <> matrix.(i)  && (not_in_mat matrix.(i) k_closer) then
         begin 
@@ -385,9 +379,6 @@ let get_quality_from_points k_closer k_id mat =
     done;
     num;;
 
-let dtr, qtr = split_quality training;;
-let a, b = find_k_nearest_neighbour 10 dtr.(0) dtr;;
-get_quality_from_points a b training;;
 
 (* Return the computed class values as well as the actual ones *)
 let k_nearest k training test =
@@ -409,7 +400,6 @@ let k_acc k mat1 mat2 =
   let a, b = k_nearest k mat1 mat2 in
     accuracy a b;;
 
-k_acc 8 training test;;
 
 
 
