@@ -154,4 +154,13 @@ let mean_square_error mat1 mat2 =
     !res /. float_of_int m;;
 
 
+(* Question 4.e *)
+(* Implement the accuracy, and the Sensitivity, Specificity benchmarks *)
+let accuracy prediction actual =
+  let res = ref 0 in
+  let m = Matrix.nb_line prediction in
+    for i = 0 to m - 1 do
+      if abs_float (prediction.(i).(0) -. actual.(i).(0)) < 0.5 then res := !res + 1
+    done;
+    (float_of_int !res) /. (float_of_int m);;
 
