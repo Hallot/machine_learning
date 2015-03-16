@@ -283,60 +283,71 @@ let manhattan point_a point_b =
 let compare_man p1 p2 ref_point =
   compare (manhattan ref_point p1) (manhattan ref_point p2);;
 
-let sort_dist ref_point matrix = 
+(* Adapted from http://rosettacode.org/wiki/Sorting_algorithms/Heapsort#OCaml *)
+(* Content is available under GNU Free Documentation License 1.2. *)
+let heapsort comp a b =
+  let swap i j =
+    let ta = a.(i) in 
+    let tb = b.(i) in
+      a.(i) <- a.(j); a.(j) <- ta;
+      b.(i) <- b.(j); b.(j) <- tb 
+  in
+
+  let sift k l =
+    let rec check x y =
+      if 2*x+1 < l then
+        let ch =
+          if y < l-1 && comp a.(y) a.(y+1) < 0 then y+1 else y in
+          if comp a.(x) a.(ch) < 0  then (swap x ch; check ch (2*ch+1)) in
+      check k (2*k+1) in
+
+  let len = Array.length a in
+
+    for start = (len / 2) - 1 downto 0 do
+      sift start len;
+    done;
+
+    for term = len - 1 downto 1 do
+      swap term 0;
+      sift 0 term;
+    done;;
+
+let sort_dist ref_point matrix matrix2= 
   let comp p1 p2 = compare_man p1 p2 ref_point in
-    Array.sort comp matrix;;
+    heapsort comp matrix matrix2;;
 
 let not_in_mat point mat = 
-  let b = ref false in
+  let b = ref true in
   let n = Matrix.nb_line mat in
     for i = 0 to n - 1 do
-      if point == mat.(i) then b := true
+      if point == mat.(i) then b := false
     done;
-    !b;;
+    (!b);;
 
-
-let id_in_mat point mat = 
-  let m = Matrix.nb_line mat in
-  let n = Matrix.nb_col mat in
-  let res = ref (0) in
-  let eq = ref true in
-    for i = 0 to m - 1 do
-      for j = 0 to n - 2 do
-        if point.(j) <> mat.(i).(j) then eq := false;
-      done;
-      if !eq = true then res := i;
-      eq := false;
-    done;
-
-
-    print_string "OxDEADBEEF";
-    print_newline ();
-    print_int !res  ;
-    print_newline ();
-    flush_all ();
-    !res;;
 
 (* Return the k nearest neighbour from a point *)
 let find_k_nearest_neighbour k point matrix =
   let m = Matrix.nb_line matrix in
   let n = Matrix.nb_col matrix in
-  let k_closer = Array.make_matrix k n 0. in
+  let k_closer = Array.make_matrix k n 10000. in
+  let k_id = Array.make_matrix k n 0 in
     (* Initialise the array because 0. is bad *)
     for i = 0 to k - 1 do
-      if  point == matrix.(i) then k_closer.(i) <- matrix.(k)
-      else k_closer.(i) <- matrix.(i);
+      if  point == matrix.(i) || (not_in_mat matrix.(i) k_closer) = false then (k_closer.(i) <- matrix.(k + i); k_id.(i).(0) <- k + i)
+      else (k_closer.(i) <- matrix.(i); k_id.(i).(0) <- i)
     done;
-    sort_dist point k_closer;
-    for i = k to m - 1 do
-      if (manhattan point matrix.(i)) < (manhattan point k_closer.(k - 1)) && point != matrix.(i) && (not_in_mat point k_closer) then
+    sort_dist point k_closer k_id;
+    for i = 0 to m - 1 do
+      if (manhattan point matrix.(i)) < (manhattan point k_closer.(k - 1)) && point <> matrix.(i)  && (not_in_mat matrix.(i) k_closer) then
         begin 
-          k_closer.(k - 1) <- matrix.(i); 
-          sort_dist point k_closer;
+          k_closer.(k - 1) <- matrix.(i);
+          k_id.(k - 1).(0) <- i;
+          sort_dist point k_closer k_id;
         end;
     done;
-    sort_dist point k_closer;
-    k_closer;;
+    sort_dist point k_closer k_id;
+    k_closer, k_id;;
+
 
 
 let split_quality matrix =
@@ -364,43 +375,42 @@ let highest_class mat =
     done;
     !max;;
 
-let get_quality_from_points k_closer mat = 
+let get_quality_from_points k_closer k_id mat = 
   let m = Matrix.nb_line k_closer in
-  let n = Matrix.nb_line mat in
+  let n = Matrix.nb_col mat in
   let num = Array.make_matrix m 1 0. in
     for i = 0 to m - 1 do
-      let id = id_in_mat k_closer.(i) mat in
-        num.(i).(0) <- mat.(id).(n)
+      let id = k_id.(i).(0) in
+        num.(i).(0) <- mat.(id).(n - 1);
     done;
     num;;
 
+let dtr, qtr = split_quality training;;
+let a, b = find_k_nearest_neighbour 10 dtr.(0) dtr;;
+get_quality_from_points a b training;;
 
+(* Return the computed class values as well as the actual ones *)
 let k_nearest k training test =
   let dtr, qtr = split_quality training in
   let dte, qte = split_quality test in
   let m = Matrix.nb_line dte in
   let comp_equal = Array.make_matrix m 1 0. in
     for i = 0 to m - 1 do
-      let point_mat = find_k_nearest_neighbour k dte.(i) dtr in
-      let class_mat = get_quality_from_points point_mat training in
+      let point_mat, id_mat = find_k_nearest_neighbour k dte.(i) dtr in
+      let class_mat = get_quality_from_points point_mat id_mat training in
       let hi_class = highest_class class_mat in
         comp_equal.(i).(0) <- float_of_int hi_class
     done;
     comp_equal, qte;;
 
 
+(* Calculate the accuracy *)
+let k_acc k mat1 mat2 = 
+  let a, b = k_nearest k mat1 mat2 in
+    accuracy a b;;
 
-split_quality training;;
+k_acc 8 training test;;
 
-
-k_nearest 10 training test;;
-
-
-
-
-print_int 0;
-print_newline ();
-flush_all ();
 
 
 
