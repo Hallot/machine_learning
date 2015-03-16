@@ -8,6 +8,12 @@ val nb_col : float array array -> int
 (* Return the number of lines of a matrix *)
 val nb_line : float array array -> int
 
+(* Return the sum of the two matrices *)
+val add : float array array -> float array array -> float array array
+
+(* Return the difference of the two matrices *)
+val sub : float array array -> float array array -> float array array
+
 (* Return a matrix which is the product of the two matrices passed as argument *)
 (* Must be of the correct size, undefined result otherwise *)
 val mult : float array array -> float array array -> float array array

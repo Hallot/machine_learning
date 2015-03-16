@@ -164,3 +164,48 @@ let accuracy prediction actual =
     done;
     (float_of_int !res) /. (float_of_int m);;
 
+
+(* Question 5.a *)
+(* Implement the regularised least squared regression *)
+let least_square_regression mat =
+  let x, t = make_mat_x_t mat in
+  let w = linear_regression mat in
+  let m = Matrix.nb_line mat in
+  let t_minus_xw = Matrix.sub t (Matrix.mult x w) in
+  let sigma = Matrix.mult (Matrix.transpose t_minus_xw) t_minus_xw in
+    sigma.(0).(0) /. float_of_int m;;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

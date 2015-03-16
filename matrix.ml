@@ -16,6 +16,30 @@ let mult mat1 mat2 =
     res;;
 
 
+let add mat1 mat2 =
+  let m = nb_line mat1 in
+  let n = nb_col mat1 in
+  let res = Array.make_matrix m n 0. in
+    for i = 0 to m - 1 do
+      for j = 0 to n - 1 do
+        res.(i).(j) <- mat1.(i).(j) +. mat2.(i).(j)
+      done
+    done;
+    res;;
+
+
+let sub mat1 mat2 =
+  let m = nb_line mat1 in
+  let n = nb_col mat1 in
+  let res = Array.make_matrix m n 0. in
+    for i = 0 to m - 1 do
+      for j = 0 to n - 1 do
+        res.(i).(j) <- mat1.(i).(j) -. mat2.(i).(j)
+      done
+    done;
+    res;;
+
+
 let copy mat = 
   let m = nb_line mat in
   let n = nb_col mat in
