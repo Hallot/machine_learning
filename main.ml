@@ -1,9 +1,9 @@
 
-(*
 #cd "/home/pierre/Glasgow/ML/machine_learning/";;
 #load "str.cma";;
 #load "matrix.cmo";;
 #load "utils.cmo";;
+(*
 *)
 
 
@@ -265,37 +265,142 @@ let k_cross_validation k mat =
             max_acc := acc;
           end;
     done;
-    (w_max, !sigma_max, !max_acc);;
+    (w_max, !sigma_max);;
+
+
+(* Question 6.d *)
+(* Implement KNN *)
+
+(* Manhattan distance *)
+let manhattan point_a point_b =
+  let m = Array.length point_a in
+  let res = ref 0. in
+    for i = 0 to m - 1 do
+      res := !res +. abs_float (point_a.(i) -. point_b.(i))
+    done;
+    !res;;
+
+let compare_man p1 p2 ref_point =
+  compare (manhattan ref_point p1) (manhattan ref_point p2);;
+
+let sort_dist ref_point matrix = 
+  let comp p1 p2 = compare_man p1 p2 ref_point in
+    Array.sort comp matrix;;
+
+let not_in_mat point mat = 
+  let b = ref false in
+  let n = Matrix.nb_line mat in
+    for i = 0 to n - 1 do
+      if point == mat.(i) then b := true
+    done;
+    !b;;
+
+
+let id_in_mat point mat = 
+  let m = Matrix.nb_line mat in
+  let n = Matrix.nb_col mat in
+  let res = ref (0) in
+  let eq = ref true in
+    for i = 0 to m - 1 do
+      for j = 0 to n - 2 do
+        if point.(j) <> mat.(i).(j) then eq := false;
+      done;
+      if !eq = true then res := i;
+      eq := false;
+    done;
+
+
+    print_string "OxDEADBEEF";
+    print_newline ();
+    print_int !res  ;
+    print_newline ();
+    flush_all ();
+    !res;;
+
+(* Return the k nearest neighbour from a point *)
+let find_k_nearest_neighbour k point matrix =
+  let m = Matrix.nb_line matrix in
+  let n = Matrix.nb_col matrix in
+  let k_closer = Array.make_matrix k n 0. in
+    (* Initialise the array because 0. is bad *)
+    for i = 0 to k - 1 do
+      if  point == matrix.(i) then k_closer.(i) <- matrix.(k)
+      else k_closer.(i) <- matrix.(i);
+    done;
+    sort_dist point k_closer;
+    for i = k to m - 1 do
+      if (manhattan point matrix.(i)) < (manhattan point k_closer.(k - 1)) && point != matrix.(i) && (not_in_mat point k_closer) then
+        begin 
+          k_closer.(k - 1) <- matrix.(i); 
+          sort_dist point k_closer;
+        end;
+    done;
+    sort_dist point k_closer;
+    k_closer;;
+
+
+let split_quality matrix =
+  let m = Matrix.nb_line matrix in
+  let n = Matrix.nb_col matrix in
+  let dat = Array.make_matrix m (n - 1) 0. in
+  let quality = Array.make_matrix m 1 0. in
+    for i = 0 to m - 1 do
+      for j = 0 to n - 2 do
+        dat.(i).(j) <- matrix.(i).(j)
+      done;
+      quality.(i).(0) <- matrix.(i).(n - 1);
+    done;
+    dat, quality;;
+
+let highest_class mat = 
+  let m = Matrix.nb_line mat in
+  let num = Array.make_matrix m 1 0 in
+  let max = ref 0 in
+    for i = 0 to m - 1 do
+      num.(int_of_float mat.(i).(0)) <- [|num.(int_of_float mat.(i).(0)).(0) + 1|]
+    done;
+    for i = 0 to m - 1 do
+      if num.(i).(0) > !max then max := i
+    done;
+    !max;;
+
+let get_quality_from_points k_closer mat = 
+  let m = Matrix.nb_line k_closer in
+  let n = Matrix.nb_line mat in
+  let num = Array.make_matrix m 1 0. in
+    for i = 0 to m - 1 do
+      let id = id_in_mat k_closer.(i) mat in
+        num.(i).(0) <- mat.(id).(n)
+    done;
+    num;;
+
+
+let k_nearest k training test =
+  let dtr, qtr = split_quality training in
+  let dte, qte = split_quality test in
+  let m = Matrix.nb_line dte in
+  let comp_equal = Array.make_matrix m 1 0. in
+    for i = 0 to m - 1 do
+      let point_mat = find_k_nearest_neighbour k dte.(i) dtr in
+      let class_mat = get_quality_from_points point_mat training in
+      let hi_class = highest_class class_mat in
+        comp_equal.(i).(0) <- float_of_int hi_class
+    done;
+    comp_equal, qte;;
+
+
+
+split_quality training;;
+
+
+k_nearest 10 training test;;
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+print_int 0;
+print_newline ();
+flush_all ();
 
 
 
