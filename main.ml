@@ -1,9 +1,9 @@
 
+(*
 #cd "/home/pierre/Glasgow/ML/machine_learning/";;
 #load "str.cma";;
 #load "matrix.cmo";;
 #load "utils.cmo";;
-(*
 *)
 
 
@@ -132,10 +132,10 @@ let write_scatterplot prediction actual file =
 
 
 let test_qualities_gen test_mat = 
-  let m = Matrix.nb_line test in
+  let m = Matrix.nb_line test_mat in
   let res = Array.make_matrix m 1 0. in
     for i = 0 to m - 1 do
-      res.(i).(0) <- test.(i).(11);
+      res.(i).(0) <- test_mat.(i).(11);
     done;
     res;;
 
@@ -155,7 +155,7 @@ let mean_square_error mat1 mat2 =
 
 
 (* Question 4.e *)
-(* Implement the accuracy, and the Sensitivity, Specificity benchmarks *)
+(* Implement the accuracy benchmark *)
 let accuracy prediction actual =
   let res = ref 0 in
   let m = Matrix.nb_line prediction in
@@ -175,18 +175,37 @@ let least_square_regression mat =
   let sigma = Matrix.mult (Matrix.transpose t_minus_xw) t_minus_xw in
     (w, sigma.(0).(0) /. float_of_int m);;
 
+
+(* Add the epsilon term to the value when computing it *)
+let compute_prediction_least_square train_mat test_mat sigma mu =
+  let x, t = make_mat_x_t test_mat in
+  let w = linear_regression train_mat in
+  let m = Matrix.nb_line x in
+  let n = Matrix.nb_col x in
+  let res = Array.make_matrix m 1 0. in
+  let pi = 4. *. atan 1. in
+    for i = 0 to m - 1 do
+      for j = 0 to n - 1 do
+        res.(i).(0) <- res.(i).(0) +. (w.(j).(0) *. x.(i).(j)) 
+      done;
+      let epsilon = (1. /. (sqrt (sigma *. 2. *. pi))) *. exp ((1. /. (-2. *. sigma *. sigma)) *. (res.(i).(0) -. mu)) in
+        res.(i).(0) <- res.(i).(0) +. epsilon;
+    done;
+    res;;
+
+
 (* Plot the results *)
-(* Run the rergssion 100 times on new data each time *)
+(* Run the rergssion 1000 times on new data each time *)
 (* plot "perf_vs_reg.dat"  with points pt 7 notitle *)
 let plot_results mat file =
   try 
     let oc = open_out file in
-      for i = 0 to 99 do
-        let (test, training) = split mat 0.3 in
-        let w, sigma = least_square_regression training in
-        let test_qualities = test_qualities_gen test in
-        let test_predictions = compute_prediction training test in
-        let acc = accuracy test_qualities test_predictions in
+      for i = 0 to 999 do
+        let (te, tr) = split mat 0.3 in
+        let w, sigma = least_square_regression tr in
+        let test_qual = test_qualities_gen te in
+        let test_pred = compute_prediction_least_square tr te sigma 0. in
+        let acc = accuracy test_pred test_qual in
           Printf.fprintf oc "%f %f\n" sigma acc;
       done;
       close_out oc;
@@ -194,7 +213,7 @@ let plot_results mat file =
     | e -> raise e;;
 
 
-plot_results red "perf_vs_reg.dat";;
+(* plot_results red "perf_vs_reg.dat";; *)
 
 
 
